@@ -1,0 +1,102 @@
+---
+title: "Week 2 R-Programming HW"
+author: "Teri Massey"
+date: "July 11, 2015"
+output: html_document
+---
+Representing the Choose Feature as a function.
+```{r}
+i_1 <- 1
+i_2 <- 1
+i_3 <- 1
+num_n <- 1
+num_r <- 1
+num_k <- 1
+num <- 1
+
+n = 5
+r = 2
+k = n-r
+
+while (i_1 <= n)
+{
+  num_n <- i_1 * num_n
+  i_1 <- i_1 + 1
+  
+}
+
+while (i_2 <= r){
+  num_r <- i_2 * num_r
+  i_2 <- i_2 + 1
+}
+while (i_3 <= k){
+  num_k <- i_3 * num_k
+  i_3 <- i_3 + 1
+}
+
+num = num_n / (num_r*num_k)
+num
+```
+
+Using 5 as the n in the equation nCR:
+n! = 5! = 120
+Below represents 5! in a function
+
+```{r}
+
+i_1 <- 1
+num_n <- 1
+n = 5
+
+while (i_1 <= n)
+{
+  num_n <- i_1 * num_n
+  i_1 <- i_1 + 1
+  
+}
+num_n
+
+```
+
+Using 2 as the r in the equation nCr:
+r! = 2! = 2
+Below represents 2! in a function
+
+```{r}
+i_2 <- 1
+num_r <- 1
+r = 2
+
+while (i_2 <= r){
+  num_r <- i_2 * num_r
+  i_2 <- i_2 + 1
+}
+num_r
+
+```
+
+THe Equation for the Choose Function is represented as: 
+Find C(n,r) where:
+C(n,r) = n! / ( r! (n - r)! )
+
+The Below code representsC
+(n,r) =
+C(5,2) =
+5! / (2! (5 - 2)!) =
+
+```{r}
+
+
+i_3 <- 1
+num_k <- 1
+num <- 1
+k = n-r
+while (i_3 <= k){
+  num_k <- i_3 * num_k
+  i_3 <- i_3 + 1
+}
+num = num_n / (num_r*num_k)
+num
+```
+
+
