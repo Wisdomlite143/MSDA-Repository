@@ -1,6 +1,6 @@
 ---
 title: "FinalProjectR"
-author: "KarenWeigandt"
+author: "Teri Massey /Karen Weigandt"
 date: "July 26, 2015"
 output: html_document
 ---
