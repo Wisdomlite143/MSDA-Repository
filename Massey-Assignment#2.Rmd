@@ -1,0 +1,54 @@
+---
+title: "Massey-Assignment#3"
+author: "Teri Massey"
+date: "September 13, 2015"
+output: pdf_document
+---
+
+choose one dataset, then study the data and its associated description of the data (i.e. "data dictionary"). You should take the data, and create an R data frame with a subset of the columns (and if you like rows) in the dataset.
+
+
+```{r}
+# install necessary packages
+install.packages("devtools", dependencies = TRUE, repos = "http://lib.stat.cmu.edu/R/CRAN/")
+```
+
+
+```{r, echo=FALSE}
+install.packages("DataCombine", dependencies = TRUE, repos = "http://lib.stat.cmu.edu/R/CRAN/")
+```
+
+```{r}
+# get RCurl on board so csv file can be retrieved
+library(RCurl)
+```
+
+```{r}
+# get package DataCombine on board so FindReplace can be used
+library(DataCombine)
+
+Bridges <- getURL("https://raw.githubusercontent.com/Wisdomlite143/MSDA-Repository/master/bridges.data.version1")
+
+# read the csv file into R
+Pittsburgh <- read.csv(text = Bridges, header = FALSE, stringsAsFactors = FALSE)
+
+# head(Pittsburgh) check the first 6 rows of data set Pittsburgh
+
+# decrease number of columns in dataset, as per assignment
+fewercol_Pittsburgh <- Pittsburgh[, 1:13]
+
+# head(fewercol_Pittsburgh) check the first 6 rows of data set fewercol_Pittsburgh
+
+# convert to dataframe
+df_fewercol_Pittsburgh <- data.frame(fewercol_Pittsburgh)
+
+
+# modify column names
+colnames(df_fewercol_Pittsburgh) <- c("IDENTIF", "RIVER", "LOCATION", "ERECTED", "PURPOSE", "LENGTH", "LANES", "CLEAR-G", "T-OR-D", "MATERIAL", "SPAN", "REL-L", "TYPE")
+
+# show the first 6 rows of the new dataframe
+head(df_fewercol_Pittsburgh)
+
+
+```
+
