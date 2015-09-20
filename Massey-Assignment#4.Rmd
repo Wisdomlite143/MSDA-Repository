@@ -1,0 +1,84 @@
+---
+title: "Massey-Assignment4"
+author: "Teri Massey"
+date: "September 20, 2015"
+output: html_document
+---
+
+```{r}
+library (stringr)
+
+```
+
+
+4. Describe the types of strings that confrom to the following regular expressions and construct an example that is matched by the regular expression.
+```{r}
+#(a)[0-9]+\\$
+    #[0-9]Searches for any number
+    # + shows and (The preceding item will be matched one or more times)
+    #\\$  end of line indicator.
+
+str_extract_all("$856 gyh$j $nomos 856$ 8$56", "[0-9]+\\$")
+
+#(b)\\b[a-z]{1,4}\\b
+    #\\b begin line indicator
+    #[a-z] Searches for any letters
+    #{1,4} 1-4 Character Digits
+    #\\b end line indicator
+
+quesb <- "when the time comes there will be abundance of light 143"
+str_extract_all(quesb,"\\b[a-z]{1,4}\\b")
+
+#(c).*?\\.txt$
+    # .*? consider all these characters
+    # \\.txt Ending with .txt
+    # \\ End line indicator
+
+quesc <- "apples*head.txt apples?head.txt$ applehead.txt"
+str_extract(quesc, ".*?\\.txt$")
+str_extract_all(quesc, ".*?\\.txt$")
+
+#(d)\\d{2}/\\d{2}/\\d{4}
+    #\\d Being line Indicator
+    #{2} two Digit Charaters
+    #/ read line Character
+    #\\d read Line
+
+quesd <- "12/14/2004, 10/15/2001, 11/24/1982"
+str_extract(quesd,"\\d{2}/\\d{2}/\\d{4}")
+str_extract_all(quesd,"\\d{2}/\\d{2}/\\d{4}")
+
+#(e)<(.+?)>.+?</\\1>
+    # avoid what is in the brackets and display the content
+quese <- "</script> when and where , link goes here</script>"
+str_replace(quese, pattern="<.+?>(.+?)<.+?>",replacement="\\1" )
+```
+
+5. Rewrite the expression [0-9]+\\$ in a way that all elements are altered but the expression performs the same tasks.
+
+```{r, echo=FALSE}
+reexpress <- "012$ 345$ 567$ 856$ 890$ 000$MissionComplete0000$ 012$ 345$ 567$ 856$ 890$"
+head(reexpress)
+
+head(str_replace_all(string=reexpress, pattern="[0-9]+\\$", replacement = "x"),6)
+```
+
+6. Consider the mail address chunkylovers53[at]aol[dot]com.
+```{r}
+#(a) Transform the string to a standard format using regular expressions.
+
+emailID="chunkylover53[at]aol[dot]com"
+emailID=sub("\\[at]","@",emailID)
+emailID=sub("\\[dot]",".",emailID)
+emailID
+
+#(b) Imagine we are trying to extract the digits in the mail address. To do so we write the expression [:digit:]. Explain why this fails and correct the expression.
+
+str_extract_all("chunkylover53[at]aol[dot]com","[[:digit:]]{1,}")
+
+#(c) Instead of using the predefined character classes, we would like to use the predefined symbols to extract the digits in the mail address. To do so we write the expression\\D. Explain why this fails and correct the expression.
+
+str_extract_all("chunkylover53[at]aol[dot]com","\\d{1,}")
+
+```
+
