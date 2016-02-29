@@ -1,0 +1,111 @@
+---
+title: "Assignment4RegularExpressionsMassey"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+library(stringr)
+library(stringr)
+library(XML)
+library(maps)
+```
+
+3. Copy the introductory example. The vector name stores the extracted names.
+
+```{r}
+#raw.data = input data
+raw.data <- "555-1239Moe Szyslak(636) 555-0113Burns, C. Montgomery555-6542Rev. Timothy Lovejoy555 8904Ned Flanders636-555-3226Simpson, Homer5553642Dr. Julius Hibbert"
+
+#Search for a capital letter followed by lowercase letters with two more minimal characters no min.
+#extract names
+name <- unlist(str_extract_all(raw.data, "[[A-Z][a-z]+., ]{2,}"))
+name
+
+```
+
+(a) Use the tools of this chapter to rearrange the vector so that all elements conform to
+the standard first_name last_name.
+```{r}
+
+sp_name <-str_split(name,",")
+sp_name
+```
+```{r}
+for (i in 1:length(sp_name)){
+  if (length(sp_name[[i]]) > 1) {
+    temp <- sp_name[[i]][1]
+    sp_name[[i]][1] <- sp_name[[i]][2]
+    sp_name[[i]][2] <- temp
+  }
+}
+sp_name
+```
+
+(b) Construct a logical vector indicating whether a character has a title (i.e., Rev. and
+Dr.).
+```{r}
+title_name <- str_detect(name,"Rev.|Dr.|Mr.|Ms.|Mrs.")
+booltn <- data.frame (name, title_name)
+booltn
+
+
+
+```
+
+(c) Construct a logical vector indicating whether a character has a second name.
+```{r}
+middle_name <- str_detect(name," [A-Z]\\.")
+boolmn <- data.frame (name, middle_name)
+boolmn
+```
+
+7. Consider the string <title>+++BREAKING NEWS+++</title>. We would like to
+extract the first HTML tag. To do so we write the regular expression <.+>. Explain why
+this fails and correct the expression.
+```{r}
+tag_str <- "<title>+++BREAKING NEWS+++</title>"
+
+
+wrong_tag <-str_extract(tag_str, "<.+>")
+wrong_tag
+```
+
+```{r}
+#the regex
+right_tag <-str_extract(tag_str, "<[[:alpha:]]+>")
+right_tag
+```
+
+
+8. Consider the string (5-3)2=52-253+3^2 conforms to the binomial theorem. We would like to extract the formula in the string. To do so we write the regular expression [^0-9=+*()]+. Explain why this fails and correct the expression.
+
+
+```{r}
+binofo <- "(5-3)^2=5^2-2*5*3+3^2"
+
+
+fix_form <-str_extract(binofo, "[^0-9=+*()]+")
+fix_form
+
+#the regex
+new_form <-str_extract(binofo, "[\\^0-9-=+*()]+")
+new_form
+```
+
+
+9. The following code hides a secret message. Crack it with R and regular expressions.
+Hint: Some of the characters are more revealing than others! The code snippet is also
+available in the materials at www.r-datacollection.com.
+clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0Tanwo
+Uwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigO
+d6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5
+fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr
+
+
+```{r}
+tempstr <- "clcopCow1zmstc0d87wnkig7OvdicpNuggvhryn92Gjuwczi8hqrfpRxs5Aj5dwpn0TanwoUwisdij7Lj8kpf03AT5Idr3coc0bt7yczjatOaootj55t3Nj3ne6c4Sfek.r1w1YwwojigOd6vrfUrbz2.2bkAnbhzgv4R9i05zEcrop.wAgnb.SqoU65fPa1otfb7wEm24k6t3sR9zqe5fy89n6Nd5t9kc4fE905gmc4Rgxo5nhDk!gr"
+
+secret <-unlist(str_extract_all(tempstr, "[[:upper:].!]"))
+
+secret
+```

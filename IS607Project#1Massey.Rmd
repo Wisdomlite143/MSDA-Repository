@@ -1,0 +1,102 @@
+---
+title: "IS607Project#1Massey"
+author: "Teri Massey"
+date: "February 25, 2016"
+output: html_document
+---
+
+
+Importing the file from Github for portability. 
+```{r}
+
+download.file("https://raw.githubusercontent.com/Wisdomlite143/MSDA-Repository/master/tournamentinfo.txt", "tournamentinfo.txt")
+datapulledin <-readLines("tournamentinfo.txt")
+library(reshape)
+```
+
+```{r}
+datapulledin<-datapulledin[5:196]
+head(datapulledin)
+```
+
+```{r}
+chess_frame <- data.frame(matrix(datapulledin, ncol =6, byrow = TRUE))
+head(chess_frame)
+nrow(chess_frame)
+ncol(chess_frame)
+```
+
+```{r}
+chess_frame<-chess_frame[,1:2]
+```
+SPlitting the columns by  piper, Combining Row1 and Row2 and Renaming the columns
+```{r}
+row1<-data.frame(do.call('rbind', strsplit(as.character(chess_frame[,1]), '|', fixed=TRUE)))
+row2<-data.frame(do.call('rbind', strsplit(as.character(chess_frame[,2]), '|', fixed=TRUE)))
+head(chess_frame)
+
+chess_frame<-cbind(row1, row2)
+
+chess_frame<-chess_frame[,1:12]
+colnames(chess_frame)<-c('Pair Num','Player name','Total Pts', 'Round 1', 'Round 2',
+                      'Round 3','Round 4','Round 5', 'Round 6', 'Round 7',
+                      'State', 'Rating_Change')
+head(chess_frame)
+```
+ Extracting the Digets from each Rounds column
+```{r}
+library(stringr)
+chess_frame$'Round 1'<-as.integer(str_extract(chess_frame$'Round 1', "[[:digit:]]+"))
+chess_frame$'Round 2'<-as.integer(str_extract(chess_frame$'Round 2', "[[:digit:]]+"))
+chess_frame$'Round 3'<-as.integer(str_extract(chess_frame$'Round 3', "[[:digit:]]+"))
+chess_frame$'Round 4'<-as.integer(str_extract(chess_frame$'Round 4', "[[:digit:]]+"))
+chess_frame$'Round 5'<-as.integer(str_extract(chess_frame$'Round 5', "[[:digit:]]+"))
+chess_frame$'Round 6'<-as.integer(str_extract(chess_frame$'Round 6', "[[:digit:]]+"))
+chess_frame$'Round 7'<-as.integer(str_extract(chess_frame$'Round 7', "[[:digit:]]+"))
+```
+
+Extract "Pre_Post" ratings from the "Rating_Change" column
+```{r}
+Pre_Post<-data.frame(str_match(chess_frame$Rating_Change,".+\\:\\s+([[:digit:]]+).+[\\-]>\\s*([[:digit:]]+)"))
+head(Pre_Post)
+
+library(dplyr)
+```
+
+```{r}
+chess_frame<-select(chess_frame, -Rating_Change)
+chess_frame<-cbind(chess_frame,Pre_Post[2])
+colnames(chess_frame)[12]<-"Pre_Rating"
+chess_frame$Pre_Rating<-as.integer(as.character(chess_frame$Pre_Rating))
+
+
+```
+
+```{r}
+str(chess_frame)
+```
+
+```{r}
+
+chess_frame$'Pair Num'<-as.integer(chess_frame$'Pair Num')
+chess_frame$'Player name'<-str_trim(as.character(chess_frame$'Player name', side = "both"))
+chess_frame$'State'<-str_trim(as.character(chess_frame$'State'), side = "both")
+chess_frame$'Total Pts'<-as.numeric(as.character(chess_frame$'Total Pts'))
+```
+Identify
+```{r}
+chess_frame[1,"Round 1"]
+chess_frame[1,"Pre_Rating"]
+chess_frame[chess_frame[1,"Round 1"],"Pre_Rating"]
+head(chess_frame)
+```
+
+```{r}
+
+sum(chess_frame[chess_frame[1,"Round 1"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 2"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 3"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 4"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 5"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 6"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 7"],"Pre_Rating"], na.rm=TRUE)
+
+```
+
+```{r}
+sum(!is.na(c(chess_frame[chess_frame[1,"Round 1"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 2"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 3"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 4"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 5"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 6"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 7"],"Pre_Rating"])))
+```
