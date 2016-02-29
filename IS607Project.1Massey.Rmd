@@ -8,95 +8,134 @@ output: html_document
 
 Importing the file from Github for portability. 
 ```{r}
+library(stringr)
+library(reshape)
+library(dplyr)
 
 download.file("https://raw.githubusercontent.com/Wisdomlite143/MSDA-Repository/master/tournamentinfo.txt", "tournamentinfo.txt")
+
 datapulledin <-readLines("tournamentinfo.txt")
-library(reshape)
+
 ```
 
 ```{r}
-datapulledin<-datapulledin[5:196]
-head(datapulledin)
+datapulledin <- str_replace_all(str_replace_all(datapulledin, "->", ">>"), "-{3,}", "")
+
+datapulledin <- datapulledin[datapulledin  != ""]
+
+datapulledin <- datapulledin[-(1:2)]
+
+# determine the format by looking at the contents of the first field in the record
+
+tournament.format1 <- datapulledin[str_detect(str_sub(datapulledin, 1, 6), "[0-9]")]
+
+tournament.format2 <- datapulledin[str_detect(str_sub(datapulledin, 1, 6), "[A-Z]{2,2}")]
+
 ```
 
 ```{r}
-chess_frame <- data.frame(matrix(datapulledin, ncol =6, byrow = TRUE))
-head(chess_frame)
-nrow(chess_frame)
-ncol(chess_frame)
+head(tournament.format1,)
 ```
 
 ```{r}
-chess_frame<-chess_frame[,1:2]
+head(tournament.format2,)
 ```
-SPlitting the columns by  piper, Combining Row1 and Row2 and Renaming the columns
+
 ```{r}
-row1<-data.frame(do.call('rbind', strsplit(as.character(chess_frame[,1]), '|', fixed=TRUE)))
-row2<-data.frame(do.call('rbind', strsplit(as.character(chess_frame[,2]), '|', fixed=TRUE)))
-head(chess_frame)
-
-chess_frame<-cbind(row1, row2)
-
-chess_frame<-chess_frame[,1:12]
-colnames(chess_frame)<-c('Pair Num','Player name','Total Pts', 'Round 1', 'Round 2',
-                      'Round 3','Round 4','Round 5', 'Round 6', 'Round 7',
-                      'State', 'Rating_Change')
-head(chess_frame)
+format1_df <- data.frame(player_num   = as.numeric(substr(tournament.format1, 1,  6)),
+                         player_name  = str_trim(substr(tournament.format1, 8,  40), side="both"),
+                         total_pts    = as.numeric(substr(tournament.format1, 42, 46)),
+                         round1       = substr(tournament.format1, 48, 52),
+                         round2       = substr(tournament.format1, 54, 58),
+                         round3       = substr(tournament.format1, 60, 64),
+                         round4       = substr(tournament.format1, 66, 70),
+                         round5       = substr(tournament.format1, 72, 76),
+                         round6       = substr(tournament.format1, 78, 82),
+                         round7       = substr(tournament.format1, 84, 88), stringsAsFactors=FALSE)
 ```
- Extracting the Digets from each Rounds column
+
+```{r}
+format2_df <- data.frame(player_state  = str_trim(substr(tournament.format2, 1,  6), side="both"),
+                         uscf_id       = str_extract(substr(tournament.format2, 8,  40), "\\d+"),
+                         pre_rating    = as.numeric(str_extract(substr(tournament.format2, 8,  40), "(?<=R: ).\\d+(?=)")),
+                         post_rating   = as.numeric(str_extract(substr(tournament.format2, 8,  40), "(?<=>>).\\d+(?=)")),
+                         stringsAsFactors=FALSE)
+```
+
+```{r}
+results_df <- cbind(format1_df, format2_df)
+```
+ 
+```{r}
+head(format1_df)
+```
+
+```{r}
+head(format2_df)
+```
+
 ```{r}
 library(stringr)
-chess_frame$'Round 1'<-as.integer(str_extract(chess_frame$'Round 1', "[[:digit:]]+"))
-chess_frame$'Round 2'<-as.integer(str_extract(chess_frame$'Round 2', "[[:digit:]]+"))
-chess_frame$'Round 3'<-as.integer(str_extract(chess_frame$'Round 3', "[[:digit:]]+"))
-chess_frame$'Round 4'<-as.integer(str_extract(chess_frame$'Round 4', "[[:digit:]]+"))
-chess_frame$'Round 5'<-as.integer(str_extract(chess_frame$'Round 5', "[[:digit:]]+"))
-chess_frame$'Round 6'<-as.integer(str_extract(chess_frame$'Round 6', "[[:digit:]]+"))
-chess_frame$'Round 7'<-as.integer(str_extract(chess_frame$'Round 7', "[[:digit:]]+"))
-```
-
-Extract "Pre_Post" ratings from the "Rating_Change" column
-```{r}
-Pre_Post<-data.frame(str_match(chess_frame$Rating_Change,".+\\:\\s+([[:digit:]]+).+[\\-]>\\s*([[:digit:]]+)"))
-head(Pre_Post)
-
-library(dplyr)
+results_df$round1<-as.integer(str_extract(results_df$round1, "[[:digit:]]+"))
+results_df$round2<-as.integer(str_extract(results_df$round2, "[[:digit:]]+"))
+results_df$round3<-as.integer(str_extract(results_df$round3, "[[:digit:]]+"))
+results_df$round4<-as.integer(str_extract(results_df$round4, "[[:digit:]]+"))
+results_df$round5<-as.integer(str_extract(results_df$round5, "[[:digit:]]+"))
+results_df$round6<-as.integer(str_extract(results_df$round6, "[[:digit:]]+"))
+results_df$round7<-as.integer(str_extract(results_df$round7, "[[:digit:]]+"))
 ```
 
 ```{r}
-chess_frame<-select(chess_frame, -Rating_Change)
-chess_frame<-cbind(chess_frame,Pre_Post[2])
-colnames(chess_frame)[12]<-"Pre_Rating"
-chess_frame$Pre_Rating<-as.integer(as.character(chess_frame$Pre_Rating))
-
-
+results_df$player_num<-as.integer(results_df$player_num)
+results_df$player_name<-str_trim(as.character(results_df$player_name, side = "both"))
+results_df$player_state<-str_trim(as.character(results_df$player_state), side = "both")
+results_df$total_pts<-as.numeric(as.character(results_df$total_pts))
+head(results_df)
 ```
 
 ```{r}
-str(chess_frame)
+sum(!is.na(c(results_df[results_df[1,"round1"],"pre_rating"],results_df[results_df[1,"round2"],"pre_rating"], results_df[results_df[1,"round3"],"pre_rating"],results_df[results_df[1,"round4"],"pre_rating"], results_df[results_df[1,"round5"],"pre_rating"],results_df[results_df[1,"round6"],"pre_rating"], results_df[results_df[1,"round7"],"pre_rating"])))
+```
+
+
+```{r}
+sum(results_df[results_df[53,"round1"],"pre_rating"],results_df[results_df[53,"round2"],"pre_rating"], results_df[results_df[53,"round3"],"pre_rating"],results_df[results_df[53,"round4"],"pre_rating"], results_df[results_df[53,"round5"],"pre_rating"],results_df[results_df[53,"round6"],"pre_rating"], results_df[results_df[53,"round7"],"pre_rating"], na.rm=TRUE)
+```
+
+
+```{r}
+sum(!is.na(c(results_df[results_df[53,"round1"],"pre_rating"],results_df[results_df[53,"round2"],"pre_rating"], results_df[results_df[53,"round3"],"pre_rating"],results_df[results_df[53,"round4"],"pre_rating"], results_df[results_df[53,"round5"],"pre_rating"],results_df[results_df[53,"round6"],"pre_rating"], results_df[results_df[53,"round7"],"pre_rating"])))
 ```
 
 ```{r}
-
-chess_frame$'Pair Num'<-as.integer(chess_frame$'Pair Num')
-chess_frame$'Player name'<-str_trim(as.character(chess_frame$'Player name', side = "both"))
-chess_frame$'State'<-str_trim(as.character(chess_frame$'State'), side = "both")
-chess_frame$'Total Pts'<-as.numeric(as.character(chess_frame$'Total Pts'))
-```
-Identify
-```{r}
-chess_frame[1,"Round 1"]
-chess_frame[1,"Pre_Rating"]
-chess_frame[chess_frame[1,"Round 1"],"Pre_Rating"]
-head(chess_frame)
+opponent_df<-select(results_df, starts_with("round"))
+head(opponent_df)
 ```
 
 ```{r}
-
-sum(chess_frame[chess_frame[1,"Round 1"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 2"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 3"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 4"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 5"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 6"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 7"],"Pre_Rating"], na.rm=TRUE)
-
+opponent_pre_ratings<-apply(opponent_df, c(1,2), function(x) results_df[x,"pre_rating"])
 ```
 
 ```{r}
-sum(!is.na(c(chess_frame[chess_frame[1,"Round 1"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 2"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 3"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 4"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 5"],"Pre_Rating"],chess_frame[chess_frame[1,"Round 6"],"Pre_Rating"], chess_frame[chess_frame[1,"Round 7"],"Pre_Rating"])))
+opponent_pre_ratings[1,]
 ```
+
+```{r}
+opponent_pre_ratings[53,]
+```
+
+```{r}
+results_df$opponent_avg_pre_rating<-round(rowMeans(opponent_pre_ratings, na.rm=TRUE))
+```
+
+```{r}
+final_results_df<-select(results_df, player_name, player_state, total_pts, pre_rating, opponent_avg_pre_rating)
+head(final_results_df)
+```
+
+```{r}
+write.csv(final_results_df,"Project1data.csv")
+```
+
+```{r}
+rm(list=ls())
