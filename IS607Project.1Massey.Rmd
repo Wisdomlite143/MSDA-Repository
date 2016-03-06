@@ -1,0 +1,141 @@
+---
+title: "IS607Project#1Massey"
+author: "Teri Massey"
+date: "February 25, 2016"
+output: html_document
+---
+
+
+Importing the file from Github for portability. 
+```{r}
+library(stringr)
+library(reshape)
+library(dplyr)
+
+download.file("https://raw.githubusercontent.com/Wisdomlite143/MSDA-Repository/master/tournamentinfo.txt", "tournamentinfo.txt")
+
+datapulledin <-readLines("tournamentinfo.txt")
+
+```
+
+```{r}
+datapulledin <- str_replace_all(str_replace_all(datapulledin, "->", ">>"), "-{3,}", "")
+
+datapulledin <- datapulledin[datapulledin  != ""]
+
+datapulledin <- datapulledin[-(1:2)]
+
+# determine the format by looking at the contents of the first field in the record
+
+tournament.format1 <- datapulledin[str_detect(str_sub(datapulledin, 1, 6), "[0-9]")]
+
+tournament.format2 <- datapulledin[str_detect(str_sub(datapulledin, 1, 6), "[A-Z]{2,2}")]
+
+```
+
+```{r}
+head(tournament.format1,)
+```
+
+```{r}
+head(tournament.format2,)
+```
+
+```{r}
+format1_df <- data.frame(player_num   = as.numeric(substr(tournament.format1, 1,  6)),
+                         player_name  = str_trim(substr(tournament.format1, 8,  40), side="both"),
+                         total_pts    = as.numeric(substr(tournament.format1, 42, 46)),
+                         round1       = substr(tournament.format1, 48, 52),
+                         round2       = substr(tournament.format1, 54, 58),
+                         round3       = substr(tournament.format1, 60, 64),
+                         round4       = substr(tournament.format1, 66, 70),
+                         round5       = substr(tournament.format1, 72, 76),
+                         round6       = substr(tournament.format1, 78, 82),
+                         round7       = substr(tournament.format1, 84, 88), stringsAsFactors=FALSE)
+```
+
+```{r}
+format2_df <- data.frame(player_state  = str_trim(substr(tournament.format2, 1,  6), side="both"),
+                         uscf_id       = str_extract(substr(tournament.format2, 8,  40), "\\d+"),
+                         pre_rating    = as.numeric(str_extract(substr(tournament.format2, 8,  40), "(?<=R: ).\\d+(?=)")),
+                         post_rating   = as.numeric(str_extract(substr(tournament.format2, 8,  40), "(?<=>>).\\d+(?=)")),
+                         stringsAsFactors=FALSE)
+```
+
+```{r}
+results_df <- cbind(format1_df, format2_df)
+```
+ 
+```{r}
+head(format1_df)
+```
+
+```{r}
+head(format2_df)
+```
+
+```{r}
+library(stringr)
+results_df$round1<-as.integer(str_extract(results_df$round1, "[[:digit:]]+"))
+results_df$round2<-as.integer(str_extract(results_df$round2, "[[:digit:]]+"))
+results_df$round3<-as.integer(str_extract(results_df$round3, "[[:digit:]]+"))
+results_df$round4<-as.integer(str_extract(results_df$round4, "[[:digit:]]+"))
+results_df$round5<-as.integer(str_extract(results_df$round5, "[[:digit:]]+"))
+results_df$round6<-as.integer(str_extract(results_df$round6, "[[:digit:]]+"))
+results_df$round7<-as.integer(str_extract(results_df$round7, "[[:digit:]]+"))
+```
+
+```{r}
+results_df$player_num<-as.integer(results_df$player_num)
+results_df$player_name<-str_trim(as.character(results_df$player_name, side = "both"))
+results_df$player_state<-str_trim(as.character(results_df$player_state), side = "both")
+results_df$total_pts<-as.numeric(as.character(results_df$total_pts))
+head(results_df)
+```
+
+```{r}
+sum(!is.na(c(results_df[results_df[1,"round1"],"pre_rating"],results_df[results_df[1,"round2"],"pre_rating"], results_df[results_df[1,"round3"],"pre_rating"],results_df[results_df[1,"round4"],"pre_rating"], results_df[results_df[1,"round5"],"pre_rating"],results_df[results_df[1,"round6"],"pre_rating"], results_df[results_df[1,"round7"],"pre_rating"])))
+```
+
+
+```{r}
+sum(results_df[results_df[53,"round1"],"pre_rating"],results_df[results_df[53,"round2"],"pre_rating"], results_df[results_df[53,"round3"],"pre_rating"],results_df[results_df[53,"round4"],"pre_rating"], results_df[results_df[53,"round5"],"pre_rating"],results_df[results_df[53,"round6"],"pre_rating"], results_df[results_df[53,"round7"],"pre_rating"], na.rm=TRUE)
+```
+
+
+```{r}
+sum(!is.na(c(results_df[results_df[53,"round1"],"pre_rating"],results_df[results_df[53,"round2"],"pre_rating"], results_df[results_df[53,"round3"],"pre_rating"],results_df[results_df[53,"round4"],"pre_rating"], results_df[results_df[53,"round5"],"pre_rating"],results_df[results_df[53,"round6"],"pre_rating"], results_df[results_df[53,"round7"],"pre_rating"])))
+```
+
+```{r}
+opponent_df<-select(results_df, starts_with("round"))
+head(opponent_df)
+```
+
+```{r}
+opponent_pre_ratings<-apply(opponent_df, c(1,2), function(x) results_df[x,"pre_rating"])
+```
+
+```{r}
+opponent_pre_ratings[1,]
+```
+
+```{r}
+opponent_pre_ratings[53,]
+```
+
+```{r}
+results_df$opponent_avg_pre_rating<-round(rowMeans(opponent_pre_ratings, na.rm=TRUE))
+```
+
+```{r}
+final_results_df<-select(results_df, player_name, player_state, total_pts, pre_rating, opponent_avg_pre_rating)
+head(final_results_df)
+```
+
+```{r}
+write.csv(final_results_df,"Project1data.csv")
+```
+
+```{r}
+rm(list=ls())
