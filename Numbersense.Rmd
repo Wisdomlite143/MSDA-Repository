@@ -1,0 +1,82 @@
+---
+title: "607 Assignment Week 6"
+author: "Teri Massey"
+date: "March 6, 2016"
+output: html_document
+--
+
+Requiring the tidyr and dplry packages
+
+```{r setup, include=FALSE}
+require(tidyr)
+require(dplyr)
+```
+
+Load the CSV file from Github, 
+make all blank areas "NA"
+convert the rownames to a proper column of the data.frame
+Remove Row 3
+```{r cars}
+untidy <- read.csv(file="https://raw.githubusercontent.com/Wisdomlite143/MSDA-Repository/master/AirlineSchedule.csv", header=TRUE, sep=",")
+untidy<-filter(untidy, X.1!="")
+
+
+untidy[2,1]<-'ALASKA'
+untidy[4,1]<-'AM WEST'
+colnames(untidy)[1] <- "Airline"
+colnames(untidy)[2] <- "Status"
+head(untidy)
+
+```
+
+```{r, echo=TRUE}
+untidy<-untidy %>% gather(City, Occurence, 3:7) 
+head(untidy)
+untidy<-spread(untidy, Status, Occurence)
+head(untidy)
+```
+
+
+```{r}
+
+City<- t(slice(untidy,0))
+City <- City[-1,]
+City <- City[-1,]
+City 
+
+endrow<-nrow(City)+2
+times<-untidy[3:endrow]
+times
+
+times<-gather(times)
+times
+
+times<-data.frame(times,stringsAsFactors=FALSE)
+
+option<-c("on time","delayed")
+times
+```
+
+Compare the arrival delays for the two airlines
+```{r}
+untidy %>% 
+  group_by(City, Airline) %>% 
+  summarise(delay_percent = 100 * delayed/(delayed+`on time`)) %>% 
+  arrange(City, Airline)
+  
+untidy %>% 
+  group_by(Airline) %>% 
+  summarise(on_time_total=sum(`on time`), delayed_total=sum(delayed),     otp=on_time_total/(on_time_total+delayed_total)*100)
+```
+vISUAL
+```{r, echo=FALSE}
+library(ggmap)
+qplot(City,`on time`/(`on time`+delayed), data=untidy, color=Airline)
+
+coordinates<-geocode(times$key, output = "latlon" , source = "google")
+geotidied<-cbind(times, coordinates)
+geotidied
+
+```
+
+ALASKA DISPLAYS A BETTER ONTIME OUTCOME
